@@ -5,26 +5,21 @@
 library(sf)           # Para manusear dados espaciais
 library(ggplot2)      # Para plotar
 library(dplyr)        # Para manipulação de dados
-library(leaflet)      # Para plotar mapas
 library(viridis)      # Para escalas de cor
 library(tidyr)        # Para manipulação de dados
 library(lubridate)    # Para manipulação de datas
 library(scales)       # Para formatar percentuais
 library(stringr)      # Para manipulação de textos
-library(htmlwidgets)  # Para salvar html
 
 ########################################################################
 #                      Carregar arquivos
 ########################################################################
 
 # Shapefile das CISPs
-cisp_shape <- st_read("limite_cisp_072024/lm_cisp_bd.shp")
+cisp_shape <- st_read("dados/limite_cisp_072024/lm_cisp_bd.shp")
 
 # Dados criminais CSV
-dados <- read.csv2("BaseDPEvolucaoMensalCisp.csv")
-
-# População anual das CISPs CSV
-pop_ano <- read.csv2("PopulacaoEvolucaoAnualCisp.csv")
+dados <- read.csv2("dados/BaseDPEvolucaoMensalCisp.csv")
 
 ########################################################################
 #              Manipular dados e produzir visualizações
@@ -303,46 +298,3 @@ ggsave("mapas/media_anual_cisp/mapa_media_roubo_veiculo.png",
        height = 12,
        units = "in",
        bg = "white")
-
-##### Mapas por CISPs (interativos - leaflet)
-
-mapa.fun2 <- function(var_fill) {
-       pal <- colorNumeric("inferno", domain = dados_5[[var_fill]])
-       mapa <- leaflet(dados_5) %>%
-              addTiles() %>%
-              addPolygons(fillColor = ~pal(get(var_fill)),
-                          fillOpacity = 0.7,
-                          color = "black",
-                          weight = 1,
-                          label = ~paste0(cisp,
-                                          ": ",
-                                          round(get(var_fill), 2),
-                                          " ocorrências"),
-                          group = "poligonos") %>%
-              addLegend(pal = pal,
-                        values = ~get(var_fill),
-                        title = as.character(nomes_legendas[var_fill]))}
-
-graf_11 <- mapa.fun2("letalidade_violenta")
-graf_12 <- mapa.fun2("roubo_carga")
-graf_13 <- mapa.fun2("roubo_rua")
-graf_14 <- mapa.fun2("roubo_veiculo")
-
-if (!dir.exists("mapas/media_anual_cisp_leaflet")) {
-       dir.create("mapas/media_anual_cisp_leaflet")}
-
-saveWidget(widget = graf_11,
-           file = "mapas/media_anual_cisp_leaflet/mapa_media_leaflet_letalidade_violenta.html",
-           title = "Letalidade violenta - RJ")
-
-saveWidget(widget = graf_12,
-           file = "mapas/media_anual_cisp_leaflet/mapa_media_leaflet_roubo_carga.html",
-           title = "Roubos de carga - RJ")
-
-saveWidget(widget = graf_13,
-           file = "mapas/media_anual_cisp_leaflet/mapa_media_leaflet_roubo_rua.html",
-           title = "Roubos de rua - RJ")
-
-saveWidget(widget = graf_14,
-           file = "mapas/media_anual_cisp_leaflet/mapa_media_leaflet_roubo_veiculo.html",
-           title = "Roubos de veículos - RJ")
